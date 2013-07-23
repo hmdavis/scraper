@@ -1,8 +1,12 @@
 import urllib2 
+from urlparse import urlparse
 from bs4 import BeautifulSoup
 
-MAX = 
-SEED_URL = 
+MAX = 15
+SEED_URL = "http://www.chordials.com" 
+
+def isValidURL(url): 
+	pass 
 
 # make smarter 
 def queueLinks(d,url,q):
@@ -11,17 +15,18 @@ def queueLinks(d,url,q):
 		soup = BeautifulSoup(page)
 		for tag in soup.find_all('a'): 
 			link = tag.get('href')
-			if link in d: 
-				d[link] += 1
+			domain = urlparse(link).netloc 
+			if domain in d:
+				d[domain] += 1
 			else: 
 				q.append(link)
-				d[link] = 1  	
+				d[domain] = 1  	
 	except: 
-		print 'exception encountered'
+		print 'MalformedURL'
 	return (d,q)
 
 def crawl(max,seed):
-	count = 1 
+	count = 1   
 	domains,queue = queueLinks({},seed,[])
 
 	while (count < max): 
