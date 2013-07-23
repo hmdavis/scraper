@@ -8,5 +8,5 @@ nothing much to see here: dinky scraper for experimenting
 * follow [robots.txt](http://www.robotstxt.org/robotstxt.html)
 * think of fun use of nlp 
 
-##depencies
+##depencies:
 * beautifulsoup 
