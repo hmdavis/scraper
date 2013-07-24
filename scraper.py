@@ -1,43 +1,47 @@
 import urllib2 
+import threading 
 from urlparse import urlparse
 from bs4 import BeautifulSoup
 
-MAX = 15
-SEED_URL = "http://www.chordials.com" 
+MAX = 50
+SEED_URL = "http://www.reddit.com"  
 
-def isValidURL(url): 
+def getImages(page): 
 	pass 
 
-# make smarter 
-def queueLinks(d,url,q):
-	try: 
-		page = urllib2.urlopen(url).read()
-		soup = BeautifulSoup(page)
-		for tag in soup.find_all('a'): 
-			link = tag.get('href')
-			domain = urlparse(link).netloc 
-			if domain in d:
-				d[domain] += 1
+def queueLinks(cache,page,q):
+	soup = BeautifulSoup(page)
+	for tag in soup.find_all('a'): 
+		url = tag.get('href')
+		try:
+			domain = urlparse(url).netloc 
+			if domain in cache:
+				cache[domain] += 1
 			else: 
-				q.append(link)
-				d[domain] = 1  	
-	except: 
-		print 'MalformedURL'
-	return (d,q)
+				q.append(url)
+				cache[domain] = 1
+		except: 
+			continue    	
+	return (cache,q)
 
 def crawl(max,seed):
-	count = 1   
-	domains,queue = queueLinks({},seed,[])
-
-	while (count < max): 
+	count = 1  
+	page = urllib2.urlopen(seed).read()
+	cache,queue = queueLinks({},page,[])
+	while (count <= max): 
 		if len(queue) <= 0: 
 			break 
 		else: 
 			url = queue.pop(0)
-			print(str(url))
-			domains,queue = queueLinks(domains,url,queue)
-			count += 1
+			try:
+				response = urllib2.urlopen(url)
+				page = response.read()
+				print count, "\t", response.code, ": ", str(url)
+				cache,queue = queueLinks(cache,page,queue)
+				count += 1
+			except:				
+				domain = urlparse(url).netloc
+				if cache[domain] == 1: del cache[domain]
+	return cache 
 
-	return domains 
-
-crawl(MAX,SEED_URL)
+c = crawl(MAX,SEED_URL)
